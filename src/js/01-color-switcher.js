@@ -13,13 +13,12 @@ function onStartClick() {
   console.log('start');
   refs.startBtn.disabled = true;
 	refs.stopBtn.disabled = false;
-
-	//
+  // ССЫЛКА НА КОЛБЕК
+	intervalId = setInterval(changeColor, 1000);
+	// или
   // intervalId = setInterval(() => {
   //   refs.body.style.backgroundColor = getRandomHexColor();
   // }, 1000);
-	// ССЫЛКА НА КОЛБЕК
-	intervalId = setInterval(changeColor, 1000);
 }
 
 function onStopClick() {
