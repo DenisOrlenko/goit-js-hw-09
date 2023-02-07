@@ -1,99 +1,125 @@
-# Parcel template
+import '../css/timer.css'
 
-Этот проект был создан при помощи Parcel. Для знакомства и настройки
-дополнительных возможностей [обратись к документации](https://parceljs.org/).
+// Описан в документации
+import flatpickr from "flatpickr";
+// Дополнительный импорт стилей
+import "flatpickr/dist/flatpickr.min.css";
 
-## Подготовка нового проекта
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
-1. Убедись что на компьютере установлена LTS-версия Node.js.
-   [Скачай и установи](https://nodejs.org/en/) её если необходимо.
-2. Склонируй этот репозиторий.
-3. Измени имя папки с `parcel-project-template` на имя своего проекта.
-4. Создай новый пустой репозиторий на GitHub.
-5. Открой проект в VSCode, запусти терминал и свяжи проект с GitHub-репозиторием
-   [по инструкции](https://docs.github.com/en/get-started/getting-started-with-git/managing-remote-repositories#changing-a-remote-repositorys-url).
-6. Установи зависимости проекта в терминале командой `npm install` .
-7. Запусти режим разработки, выполнив команду `npm start`.
-8. Перейди в браузере по адресу [http://localhost:1234](http://localhost:1234).
-   Эта страница будет автоматически перезагружаться после сохранения изменений в
-   файлах проекта.
+const options = {
+  enableTime: true,
+  time_24hr: true,
+  defaultDate: new Date(),
+  minuteIncrement: 1,
+  onClose(selectedDates) {
+    console.log(selectedDates[0]);
+  },
+};
 
-## Файлы и папки
+// // создаю рефы (ссылки на элементы, с которыми буду работать)
+const refs = {
+		startBtn: document.querySelector('button[data-start]'),
+		daysUI: document.querySelector('span[data-days]'),
+		hoursUI: document.querySelector('span[data-hours]'),
+		minsUI: document.querySelector('span[data-minutes]'),
+		secsUI: document.querySelector('span[data-seconds]')
+	}
 
-- Все паршалы файлов стилей должны лежать в папке `src/sass` и импортироваться в
-  файлы стилей страниц. Например, для `index.html` файл стилей называется
-  `index.scss`.
-- Изображения добавляй в папку `src/images`. Сборщик оптимизирует их, но только
-  при деплое продакшн версии проекта. Все это происходит в облаке, чтобы не
-  нагружать твой компьютер, так как на слабых машинах это может занять много
-  времени.
+// преобразовую обьект timer в класс = экземпляр класса
+// ОБЬЯВЛЕНИЕ КЛАССА
+class Timer {
+  // constructor() - для инициализации данных класса в вызванном экземпляре класса
+  constructor({ onTick }) {
+    this.intervalId = null;
+    this.isActive = false;
+    this.onTick = onTick;
 
-## Деплой
+    // вызов метода
+    this.init()
+  }
 
-Для настройки деплоя проекта необходимо выполнить несколько дополнительных шагов
-по настройке твоего репозитория. Зайди во вкладку `Settings` и в подсекции
-`Actions` выбери выбери пункт `General`.
+  // При первой загрузке - будет отображаться интерфейс с 00:00:00
+  init() {
+    const initTime = this.convertMs(0);
+    this.onTick(initTime);
+  }
 
-![GitHub actions settings](./assets/actions-config-step-1.png)
+  start() {
+    if (this.isActive) {
+      return;
+    }
+    this.isActive = true;
 
-Пролистай страницу до последней секции, в которой убедись что выбраны опции как
-на следующем изображении и нажми `Save`. Без этих настроек у сборки будет
-недостаточно прав для автоматизации процесса деплоя.
+    const startTime = new Date(2023, 3, 4, 15, 0, 0, 0);
+    this.intervalId = setInterval(() => {
+      const currentTime = Date.now();
+      const deltaTime = startTime - currentTime;
+      const timeComponents = this.convertMs(deltaTime);
+      // Вместо прямого вызова ф-ии updateClockface(timeComponents) - передаю через this = сохранение на интерфейсе данных при нажатии стоп
+      this.onTick(timeComponents);
+    }, 1000);
+  }
+  // stop() {
+  //   // отложенная ф-я прекращается вызываться (очищается)
+  //   clearInterval(this.intervalId);
+  //   this.isActive = false;
+  //   // обнуление времени при нажатии на стоп
+  //   const timeReset = this.convertMs(0);
+  //   // сохранение на интерфейсе данных при нажатии стоп
+  //   this.onTick(timeReset);
+  // }
 
-![GitHub actions settings](./assets/actions-config-step-2.png)
+  // из ф-ии делаю метод класса
+  convertMs(ms) {
+    // Number of milliseconds per unit of time
+    const second = 1000;
+    const minute = second * 60;
+    const hour = minute * 60;
+    const day = hour * 24;
 
-Продакшн версия проекта будет автоматически собираться и деплоиться на GitHub
-Pages, в ветку `gh-pages`, каждый раз когда обновляется ветка `main`. Например,
-после прямого пуша или принятого пул-реквеста. Для этого необходимо в файле
-`package.json` отредактировать поле `homepage` и скрипт `build`, заменив
-`your_username` и `your_repo_name` на свои, и отправить изменения на GitHub.
+    // Remaining days
+    // this. добавляю
+    const days = this.addLeadingZero(Math.floor(ms / day));
+    // Remaining hours
+    const hours = this.addLeadingZero(Math.floor((ms % day) / hour));
+    // Remaining minutes
+    const minutes = this.addLeadingZero(Math.floor(((ms % day) % hour) / minute));
+    // Remaining seconds
+    const seconds = this.addLeadingZero(
+      Math.floor((((ms % day) % hour) % minute) / second)
+    );
 
-```json
-"homepage": "https://your_username.github.io/your_repo_name/",
-"scripts": {
-  "build": "parcel build src/*.html --public-url /your_repo_name/"
-},
-```
+    return { days, hours, minutes, seconds };
+  }
 
-Далее необходимо зайти в настройки GitHub-репозитория (`Settings` > `Pages`) и
-выставить раздачу продакшн версии файлов из папки `/root` ветки `gh-pages`, если
-это небыло сделано автоматически.
+  addLeadingZero(value) {
+    return String(value).padStart(2, '0');
+  }
+}
 
-![GitHub Pages settings](./assets/repo-settings.png)
+// ВЫЗОВ КЛАССА
+// Создаю экземпляр класса new Timer(), который вызывает класс Timer()
+//Передаю через параметры экземпляра (обьект настроек {onTick: updateClockface}) ф-ю на рисование интерфейса (сам КЛАСС не будет иметь в себе ее)
+// создаю св-во onTick - значением передаю ссылку на ф-ю
+const timer = new Timer({
+  onTick: updateClockface,
+});
 
-### Статус деплоя
 
-Статус деплоя крайнего коммита отображается иконкой возле его идентификатора.
+refs.startBtn.addEventListener('click', () => {
+  timer.start();
+});
+// Вешаю слушатель события на stopBtn и при клике на кнопку вызываю timer.stop
+// refs.stopBtn.addEventListener('click', () => {
+//   timer.stop();
+// });
 
-- **Желтый цвет** - выполняется сборка и деплой проекта.
-- **Зеленый цвет** - деплой завершился успешно.
-- **Красный цвет** - во время линтинга, сборки или деплоя произошла ошибка.
-
-Более детальную информацию о статусе можно посмотреть кликнув по иконке, и в
-выпадающем окне перейти по ссылке `Details`.
-
-![Deployment status](./assets/status.png)
-
-### Живая страница
-
-Через какое-то время, обычно пару минут, живую страницу можно будет посмотреть
-по адресу указанному в отредактированном свойстве `homepage`. Например, вот
-ссылка на живую версию для этого репозитория
-[https://goitacademy.github.io/parcel-project-template](https://goitacademy.github.io/parcel-project-template).
-
-Если открывается пустая страница, убедись что во вкладке `Console` нет ошибок
-связанных с неправильными путями к CSS и JS файлам проекта (**404**). Скорее
-всего у тебя неправильное значение свойства `homepage` или скрипта `build` в
-файле `package.json`.
-
-## Как это работает
-
-![How it works](./assets/how-it-works.png)
-
-1. После каждого пуша в ветку `main` GitHub-репозитория, запускается специальный
-   скрипт (GitHub Action) из файла `.github/workflows/deploy.yml`.
-2. Все файлы репозитория копируются на сервер, где проект инициализируется и
-   проходит сборку перед деплоем.
-3. Если все шаги прошли успешно, собранная продакшн версия файлов проекта
-   отправляется в ветку `gh-pages`. В противном случае, в логе выполнения
-   скрипта будет указано в чем проблема.
+// отрисовую интерфейс - т.е. вывожу на польз. интерфейс рез-т отложенной ф-ии с помощью ф-ии updateClockface
+// подставляю значение времени в параметр
+function updateClockface({ days, hours, minutes, seconds }) {
+	refs.daysUI.textContent = `${days}`;
+	refs.hoursUI.textContent = `${hours}`;
+	refs.minsUI.textContent = `${minutes}`;
+	refs.secsUI.textContent = `${seconds}`;
+}
