@@ -73,7 +73,7 @@ class Timer {
       const deltaTime = selectedTime - currentTime;
       const timeComponents = this.convertMs(deltaTime);
 
-      if (deltaTime <= 0) {
+      if (deltaTime === 0) {
         clearInterval(this.intervalId);
         // this.init();
       }
