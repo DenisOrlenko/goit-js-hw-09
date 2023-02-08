@@ -29,7 +29,7 @@ const options = {
   minuteIncrement: 1,
   onClose(selectedDates) {
     // Параметр selectedDates это массив выбранных дат, поэтому мы берем первый элемент - selectedDates[0]
-    console.log(selectedDates[0])
+    // console.log(selectedDates[0]);
     // Если пользователь выбрал дату в прошлом - if (selectedDates[0] < Date.now())
     if (selectedDates[0] < Date.now()) {
       Notify.failure('Please choose a date in the future');
@@ -72,6 +72,12 @@ class Timer {
       const currentTime = Date.now();
       const deltaTime = selectedTime - currentTime;
       const timeComponents = this.convertMs(deltaTime);
+
+      if (deltaTime = 0) {
+        clearInterval(this.intervalId);
+        // this.init();
+      }
+
       // Вместо прямого вызова ф-ии updateClockface(timeComponents) - передаю через this = сохранение на интерфейсе данных при нажатии стоп
       this.onTick(timeComponents);
     }, 1000);
