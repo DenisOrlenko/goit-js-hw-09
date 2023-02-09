@@ -73,9 +73,8 @@ class Timer {
       const deltaTime = selectedTime - currentTime;
       const timeComponents = this.convertMs(deltaTime);
 
-      if (deltaTime === 0) {
+      if (deltaTime <= 999) {
         clearInterval(this.intervalId);
-        // this.init();
       }
 
       // Вместо прямого вызова ф-ии updateClockface(timeComponents) - передаю через this = сохранение на интерфейсе данных при нажатии стоп
