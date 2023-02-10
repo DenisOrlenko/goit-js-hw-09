@@ -73,8 +73,12 @@ class Timer {
       const deltaTime = selectedTime - currentTime;
       const timeComponents = this.convertMs(deltaTime);
 
+      // если <= 00:00:0,999
       if (deltaTime <= 999) {
+        // Остановка таймера - ф-ии отложенного вызова setInterval() при срабатывании 00:00:0,999
         clearInterval(this.intervalId);
+        // повторний выбор даты и запуск таймера после окончания работы таймера (00:00:00:00)
+        this.isActive = false;
       }
 
       // Вместо прямого вызова ф-ии updateClockface(timeComponents) - передаю через this = сохранение на интерфейсе данных при нажатии стоп
